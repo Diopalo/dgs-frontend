@@ -7,7 +7,8 @@ import {
   deleteSite 
 } from "../services/siteService";
 
-const EMPTY_FORM = { nom: "", url: "" };
+// Mise à jour de l'état initial avec projetId
+const EMPTY_FORM = { projetId: "", nom: "", url: "" };
 
 function Sites() {
   const [sites, setSites] = useState([]);
@@ -51,9 +52,13 @@ function Sites() {
     setShowForm(false);
   };
 
-  // Activer le mode édition pour un site
+  // Activer le mode édition pour un site (inclut l'id projet)
   const handleEditClick = (site) => {
-    setForm({ nom: site.nom, url: site.url });
+    setForm({ 
+      projetId: site.projetId || "", 
+      nom: site.nom || "", 
+      url: site.url || "" 
+    });
     setEditingId(site.id);
     setShowForm(true);
   };
@@ -61,12 +66,14 @@ function Sites() {
   // Soumission (Création & Modification)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.nom.trim() || !form.url.trim()) {
-      setError("Le nom et l'URL du site sont obligatoires.");
+    if (!form.projetId.toString().trim() || !form.nom.trim() || !form.url.trim()) {
+      setError("L'ID du projet, le nom et l'URL du site sont obligatoires.");
       return;
     }
 
+    // Le payload envoyé au backend contient désormais projetId
     const payload = {
+      projetId: Number(form.projetId) || form.projetId,
       nom: form.nom.trim(),
       url: form.url.trim(),
     };
@@ -106,7 +113,6 @@ function Sites() {
     setError(null);
     try {
       await deleteSite(id);
-      // Supprime immédiatement de l'affichage local si l'API répond OK
       setSites((prev) => prev.filter((site) => site.id !== id));
     } catch (err) {
       console.error("Erreur lors de la suppression du site :", err);
@@ -140,10 +146,22 @@ function Sites() {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="bg-white shadow border border-slate-200 rounded p-4 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end transition-all"
+          className="bg-white shadow border border-slate-200 rounded p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end transition-all"
         >
+          {/* Nouveau champ : ID du Projet */}
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Nom du Site</label>
+            <label className="block text-sm font-medium text-gray-600 mb-1">ID du Projet *</label>
+            <input
+              type="number"
+              value={form.projetId}
+              placeholder="Ex: 5"
+              onChange={(e) => setForm((f) => ({ ...f, projetId: e.target.value }))}
+              className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-slate-400"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-1">Nom du Site *</label>
             <input
               type="text"
               value={form.nom}
@@ -154,7 +172,7 @@ function Sites() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">URL du Site</label>
+            <label className="block text-sm font-medium text-gray-600 mb-1">URL du Site *</label>
             <input
               type="url"
               value={form.url}
@@ -188,7 +206,8 @@ function Sites() {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-slate-100 text-left text-slate-700 uppercase text-xs font-semibold tracking-wider border-b">
-              <th className="p-3">ID</th>
+              <th className="p-3">ID Site</th>
+              <th className="p-3">ID Projet</th>
               <th className="p-3">Nom</th>
               <th className="p-3">URL</th>
               <th className="p-3 text-center">Actions</th>
@@ -197,7 +216,7 @@ function Sites() {
           <tbody className="text-slate-600 text-sm">
             {loading ? (
               <tr>
-                <td colSpan="4" className="p-6 text-center text-gray-400">
+                <td colSpan="5" className="p-6 text-center text-gray-400">
                   Chargement des sites internet...
                 </td>
               </tr>
@@ -205,6 +224,7 @@ function Sites() {
               sites.map((site) => (
                 <tr key={site.id} className="border-b hover:bg-slate-50 transition-colors">
                   <td className="p-3 font-mono">{site.id}</td>
+                  <td className="p-3 font-mono text-slate-500">{site.projetId || "—"}</td>
                   <td className="p-3 font-medium text-slate-900">{site.nom}</td>
                   <td className="p-3">
                     <a
@@ -216,7 +236,6 @@ function Sites() {
                       {site.url}
                     </a>
                   </td>
-                  {/* Actions CRUD intégrées */}
                   <td className="p-3 flex gap-2 justify-center items-center">
                     <button
                       onClick={() => handleEditClick(site)}
@@ -235,7 +254,7 @@ function Sites() {
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="p-6 text-center text-gray-500">
+                <td colSpan="5" className="p-6 text-center text-gray-500">
                   Aucun site trouvé. Passez à l'action en en ajoutant un !
                 </td>
               </tr>
