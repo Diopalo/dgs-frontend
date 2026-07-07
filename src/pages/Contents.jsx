@@ -18,8 +18,8 @@ export default function Contents() {
       
       // Appels calés sur ton ContentService
       const [listRes, calendarRes] = await Promise.all([
-        ContentService.listContenus(siteId),
-        ContentService.getCalendrier(siteId)
+        contentService.listContenus(siteId),
+        contentService.getCalendrier(siteId)
       ]);
       
       setContents(listRes.data || []);
@@ -47,13 +47,13 @@ export default function Contents() {
 
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce contenu ?')) {
       try {
-        await ContentService.deleteContenu(siteId, id);
+        await contentService.deleteContenu(siteId, id);
         
         // Mise à jour locale rapide de l'UI
         setContents(prev => prev.filter(item => item.id !== id));
         
         // Rafraîchissement du calendrier en arrière-plan
-        const calendarRes = await ContentService.getCalendrier(siteId);
+        const calendarRes = await contentService.getCalendrier(siteId);
         setCalendar(calendarRes.data || {});
       } catch (err) {
         const errMsg = err.response?.data?.message || 'Erreur lors de la suppression.';

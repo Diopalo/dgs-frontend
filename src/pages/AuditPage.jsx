@@ -105,7 +105,7 @@ function AuditPage() {
     if (typeof issuesList === 'string') {
       try {
         issuesList = JSON.parse(issuesList);
-      } catch (e) {
+      } catch {
         return <li className="p-3 bg-red-50 text-red-800 rounded text-sm shadow-sm">{auditResult.issues}</li>;
       }
     }

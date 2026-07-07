@@ -13,23 +13,6 @@ function Register() {
     role: "REDACTEUR", // Modifié ici : REDACTEUR par défaut
   });
 
-  
-const handleAdminRegister = async () => {
-  const adminData = {
-    nom: "admin",
-    email: "admin@gmail.com",
-    motDePasse: "supersecret123",
-    role: "ADMIN" 
-  };
-
-  try {
-    const data = await register(adminData);
-    console.log("Admin créé avec succès !", data);
-  } catch (error) {
-    console.error("Erreur d'inscription", error);
-  }
-};
-
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -61,7 +44,7 @@ const handleAdminRegister = async () => {
       setSuccess("Compte créé avec succès ! Redirection...");
 
       timeoutRef.current = setTimeout(() => {
-        navigate("/connexion");
+        navigate("/login");
       }, 1500);
 
     } catch (err) {
@@ -153,7 +136,7 @@ const handleAdminRegister = async () => {
 
         <p className="mt-6 text-sm text-center text-slate-600">
           Déjà un compte ?{" "}
-          <Link to="/connexion" className="text-blue-600 hover:underline font-medium">
+          <Link to="/login" className="text-blue-600 hover:underline font-medium">
             Se connecter
           </Link>
         </p>

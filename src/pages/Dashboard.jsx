@@ -177,7 +177,7 @@ function Dashboard() {
                   key={reco.id}
                   className="border-l-4 border-red-500 pl-4"
                 >
-                  {reco.titre}
+                  {reco.message}
                 </li>
               )
             )}

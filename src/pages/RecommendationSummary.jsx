@@ -64,17 +64,17 @@ function RecommendationSummary() {
             </h3>
 
             <p className="text-4xl font-bold text-red-600">
-              {summary.ouvertes}
+              {summary.par_statut?.OUVERTE ?? 0}
             </p>
           </div>
 
           <div className="bg-white p-6 rounded shadow">
             <h3 className="text-gray-500">
-              Terminées
+              Résolues
             </h3>
 
             <p className="text-4xl font-bold text-green-600">
-              {summary.terminees}
+              {summary.par_statut?.RESOLUE ?? 0}
             </p>
           </div>
         </div>

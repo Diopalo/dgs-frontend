@@ -25,7 +25,7 @@ export const updateKeyword = async (siteId, keywordId, keywordData) => {
 
 /** Supprime un mot-clé */
 export const deleteKeyword = async (siteId, keywordId) => {
-  const response = await api.delete(`/sites/${siteId}/mots-cles/{keywordId}`);
+  const response = await api.delete(`/sites/${siteId}/mots-cles/${keywordId}`);
   return response.data;
 };
 

@@ -51,7 +51,7 @@ export default function CreateContent() {
       };
 
       // Execution via ton service unifié
-      await ContentService.createContenu(siteId, payload);
+      await contentService.createContenu(siteId, payload);
 
       // Succès -> redirection
       navigate(`/sites/${siteId}/contenus`);

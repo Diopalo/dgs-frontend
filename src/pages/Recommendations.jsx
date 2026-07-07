@@ -103,11 +103,11 @@ function Recommendations() {
               <div className="flex justify-between">
                 <div>
                   <h3 className="font-bold text-lg">
-                    {reco.titre}
+                    {reco.type}
                   </h3>
 
                   <p className="text-gray-600 mt-2">
-                    {reco.description}
+                    {reco.message}
                   </p>
                 </div>
 
@@ -143,8 +143,8 @@ function Recommendations() {
                     EN COURS
                   </option>
 
-                  <option value="TERMINEE">
-                    TERMINÉE
+                  <option value="RESOLUE">
+                    RÉSOLUE
                   </option>
                 </select>
               </div>

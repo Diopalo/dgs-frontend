@@ -101,12 +101,6 @@ function AuditResults() {
     return "text-red-600 bg-red-50 border-red-200";
   };
 
-  const getScoreRingColor = (score) => {
-    if (score >= 80) return "#16a34a";
-    if (score >= 50) return "#ea580c";
-    return "#dc2626";
-  };
-
   // --- Normalise les anomalies, qu'elles soient des strings, du JSON stringifié, ou des objets {message, severity} ---
   const parsedIssues = (() => {
     if (!audit || !audit.issues) return [];
