@@ -58,6 +58,16 @@ const contentService = {
     return response.data;
   },
 
+    /**
+   * GET /api/sites/:siteId/contenus/:id
+   * Récupère un contenu éditorial par son identifiant
+   */
+  async getContenu(siteId, id) {
+    const client = getApiClient(siteId);
+    const response = await client.get(`/${id}`);
+    return response.data;
+  },
+  
   /**
    * DELETE /api/sites/:siteId/contenus/:id
    * Supprime un contenu éditorial du site

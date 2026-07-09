@@ -27,6 +27,15 @@ export const createProject = async (projectData) => {
   return response.data;
 };
 
+export const updateProject = async (id, projectData) => {
+  const response = await axios.put(
+    `${API_URL}/${id}`,
+    projectData,
+    getAuthHeaders()
+  );
+  return response.data;
+};
+
 export const deleteProject = async (id) => {
   const response = await axios.delete(
     `${API_URL}/${id}`,
