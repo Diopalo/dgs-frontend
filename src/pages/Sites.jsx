@@ -1,26 +1,26 @@
 import { useEffect, useState, useCallback } from "react";
 import MainLayout from "../layouts/MainLayout";
-import { 
-  getSites, 
-  createSite, 
-  updateSite, 
-  deleteSite 
+import {
+  getSites,
+  createSite,
+  updateSite,
+  deleteSite,
 } from "../services/siteService";
+import { getProjects } from "../services/projectService";
 
-const EMPTY_FORM = { nom: "", url: "" };
+const EMPTY_FORM = { nom: "", url: "", projetId: "" };
 
 function Sites() {
   const [sites, setSites] = useState([]);
+  const [projets, setProjets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  // États pour la gestion du formulaire (Création / Édition)
   const [form, setForm] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
-  // Fonction de récupération globale des sites enveloppée dans un useCallback
   const fetchSites = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -35,40 +35,60 @@ function Sites() {
     }
   }, []);
 
-  // Cycle de vie initial
+  // Charge les sites ET les projets au montage
   useEffect(() => {
     let isMounted = true;
-    if (isMounted) fetchSites();
-    return () => {
-      isMounted = false;
+
+    const init = async () => {
+      if (!isMounted) return;
+      await fetchSites();
+
+      try {
+        const data = await getProjects();
+        if (isMounted) {
+          setProjets(Array.isArray(data) ? data : data.data || []);
+        }
+      } catch (err) {
+        console.error("Erreur lors de la récupération des projets :", err);
+      }
     };
+
+    init();
+    return () => { isMounted = false; };
   }, [fetchSites]);
 
-  // Réinitialiser le formulaire
   const resetForm = () => {
     setForm(EMPTY_FORM);
     setEditingId(null);
     setShowForm(false);
   };
 
-  // Activer le mode édition pour un site
   const handleEditClick = (site) => {
-    setForm({ nom: site.nom, url: site.url });
+    setForm({
+      nom: site.nom,
+      url: site.url,
+      projetId: site.projetId || site.projet?.id || "",
+    });
     setEditingId(site.id);
     setShowForm(true);
   };
 
-  // Soumission (Création & Modification)
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.nom.trim() || !form.url.trim()) {
       setError("Le nom et l'URL du site sont obligatoires.");
       return;
     }
+    // projetId obligatoire uniquement à la création
+    if (!editingId && !form.projetId) {
+      setError("Veuillez sélectionner un projet.");
+      return;
+    }
 
     const payload = {
       nom: form.nom.trim(),
       url: form.url.trim(),
+      ...(form.projetId && { projetId: parseInt(form.projetId) }),
     };
 
     setSaving(true);
@@ -76,14 +96,12 @@ function Sites() {
 
     try {
       if (editingId) {
-        // UPDATE
         const response = await updateSite(editingId, payload);
         const updatedSite = response.data || response;
         setSites((prev) =>
           prev.map((s) => (s.id === editingId ? updatedSite : s))
         );
       } else {
-        // CREATE
         const response = await createSite(payload);
         const newSite = response.data || response;
         setSites((prev) => [...prev, newSite]);
@@ -91,22 +109,17 @@ function Sites() {
       resetForm();
     } catch (err) {
       console.error("Erreur lors de l'enregistrement du site :", err);
-      setError("L'enregistrement a échoué. Veuillez vérifier les informations.");
+      setError("L'enregistrement a échoué. Vérifiez les informations.");
     } finally {
       setSaving(false);
     }
   };
 
-  // Suppression d'un site (DELETE)
   const handleDeleteSite = async (id, nom) => {
-    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer définitivement le site "${nom}" ?`)) {
-      return;
-    }
-
+    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer définitivement le site "${nom}" ?`)) return;
     setError(null);
     try {
       await deleteSite(id);
-      // Supprime immédiatement de l'affichage local si l'API répond OK
       setSites((prev) => prev.filter((site) => site.id !== id));
     } catch (err) {
       console.error("Erreur lors de la suppression du site :", err);
@@ -116,7 +129,6 @@ function Sites() {
 
   return (
     <MainLayout>
-      {/* En-tête */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-slate-800">Gestion des Sites</h1>
         {!showForm && (
@@ -129,21 +141,21 @@ function Sites() {
         )}
       </div>
 
-      {/* Alertes erreurs */}
       {error && (
         <div className="mb-4 p-3 rounded bg-red-50 text-red-700 border border-red-200">
           {error}
         </div>
       )}
 
-      {/* Formulaire Inline dynamique (Création / Édition) */}
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="bg-white shadow border border-slate-200 rounded p-4 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end transition-all"
+          className="bg-white shadow border border-slate-200 rounded p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end transition-all"
         >
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Nom du Site</label>
+            <label className="block text-sm font-medium text-gray-600 mb-1">
+              Nom du Site
+            </label>
             <input
               type="text"
               value={form.nom}
@@ -153,8 +165,11 @@ function Sites() {
               required
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">URL du Site</label>
+            <label className="block text-sm font-medium text-gray-600 mb-1">
+              URL du Site
+            </label>
             <input
               type="url"
               value={form.url}
@@ -164,6 +179,29 @@ function Sites() {
               required
             />
           </div>
+
+          {/* Sélecteur de projet — affiché uniquement à la création */}
+          {!editingId && (
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Projet associé
+              </label>
+              <select
+                value={form.projetId}
+                onChange={(e) => setForm((f) => ({ ...f, projetId: e.target.value }))}
+                className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white"
+                required
+              >
+                <option value="">-- Sélectionner un projet --</option>
+                {projets.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name || p.nom} (#{p.id})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="flex gap-2 justify-end">
             <button
               type="button"
@@ -183,7 +221,6 @@ function Sites() {
         </form>
       )}
 
-      {/* Tableau des sites */}
       <div className="bg-white shadow rounded overflow-hidden border border-slate-200">
         <table className="w-full border-collapse">
           <thead>
@@ -191,13 +228,14 @@ function Sites() {
               <th className="p-3">ID</th>
               <th className="p-3">Nom</th>
               <th className="p-3">URL</th>
+              <th className="p-3">Projet</th>
               <th className="p-3 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="text-slate-600 text-sm">
             {loading ? (
               <tr>
-                <td colSpan="4" className="p-6 text-center text-gray-400">
+                <td colSpan="5" className="p-6 text-center text-gray-400">
                   Chargement des sites internet...
                 </td>
               </tr>
@@ -207,8 +245,8 @@ function Sites() {
                   <td className="p-3 font-mono">{site.id}</td>
                   <td className="p-3 font-medium text-slate-900">{site.nom}</td>
                   <td className="p-3">
-                    <a
-                      href={site.url}
+                    
+                    <a href={site.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline"
@@ -216,7 +254,10 @@ function Sites() {
                       {site.url}
                     </a>
                   </td>
-                  {/* Actions CRUD intégrées */}
+                  <td className="p-3 text-slate-500">
+                    {/* Affiche le nom du projet si disponible */}
+                    {site.projet?.nom || site.projet?.name || `#${site.projetId}` || "—"}
+                  </td>
                   <td className="p-3 flex gap-2 justify-center items-center">
                     <button
                       onClick={() => handleEditClick(site)}
@@ -235,7 +276,7 @@ function Sites() {
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="p-6 text-center text-gray-500">
+                <td colSpan="5" className="p-6 text-center text-gray-500">
                   Aucun site trouvé. Passez à l'action en en ajoutant un !
                 </td>
               </tr>

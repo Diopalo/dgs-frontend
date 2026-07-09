@@ -1,8 +1,4 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -19,94 +15,38 @@ import Recommendations from "./pages/Recommendations";
 import RecommendationSummary from "./pages/RecommendationSummary";
 import Contents from "./pages/Contents";
 import CreateContent from "./pages/CreateContent";
+import EditContent from "./pages/EditContent";
 
 function App() {
   return (
     <BrowserRouter>
-
       <Routes>
 
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+        {/* Routes publiques */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/inscription" element={<Register />} />
 
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+        {/* Routes protégées */}
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/sites" element={<ProtectedRoute><Sites /></ProtectedRoute>} />
+        <Route path="/sites/create" element={<ProtectedRoute><CreateSite /></ProtectedRoute>} />
+        <Route path="/sites/:id/audit" element={<ProtectedRoute><AuditResults /></ProtectedRoute>} />
+        <Route path="/keywords" element={<ProtectedRoute><Keywords /></ProtectedRoute>} />
+        <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+        <Route path="/projects/create" element={<ProtectedRoute><CreateProject /></ProtectedRoute>} />
+        <Route path="/audit" element={<ProtectedRoute><AuditPage /></ProtectedRoute>} />
+        <Route path="/recommendations" element={<ProtectedRoute><Recommendations /></ProtectedRoute>} />
+        <Route path="/recommendations/summary" element={<ProtectedRoute><RecommendationSummary /></ProtectedRoute>} />
 
-        <Route
-          path="/sites"
-          element={
-            <ProtectedRoute>
-              <Sites />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/keywords"
-          element={
-            <ProtectedRoute>
-              <Keywords />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="*"
-          element={<Login />}
-        />
-
-        <Route
-          path="/inscription"
-          element={<Register />}
-        />
-
-        <Route path="/projects" element={<Projects />} 
-        />
-
-        <Route path="/projects/create" element={<CreateProject />} 
-        />
-
-        <Route path="/sites/create" element={<CreateSite />} 
-        />
-
-        <Route path="/audit" element={<AuditPage />} 
-        />
-
-        <Route path="/sites/:id/audit" element={<AuditResults />} 
-        />
-
-        <Route path="/recommendations" element={<Recommendations />}
-        />
-
-        <Route
-          path="/recommendations/summary"
-          element={<RecommendationSummary />}
-        />
-        
-        {/* 1. Liste des contenus et calendrier d'un site spécifié */}
-        <Route 
-          path="/sites/:siteId/contenus" 
-          element={<Contents />} 
-        />
-
-        {/* 2. Formulaire de création d'un contenu pour un site */}
-        <Route 
-          path="/sites/:siteId/contenus/creer" 
-          element={<CreateContent />} 
-        />
+        {/* Contenus — route accessible depuis le menu sans siteId */}
+        <Route path="/contenus" element={<ProtectedRoute><Contents /></ProtectedRoute>} />
+        <Route path="/sites/:siteId/contenus" element={<ProtectedRoute><Contents /></ProtectedRoute>} />
+        <Route path="/sites/:siteId/contenus/creer" element={<ProtectedRoute><CreateContent /></ProtectedRoute>} />
+        <Route path="/sites/:siteId/contenus/editer/:id" element={<ProtectedRoute><EditContent /></ProtectedRoute>} />
+        {/* Fallback — redirige vers login si route inconnue */}
+        <Route path="*" element={<Login />} />
 
       </Routes>
-
-          
-
     </BrowserRouter>
   );
 }
