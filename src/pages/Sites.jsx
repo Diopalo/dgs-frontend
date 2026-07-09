@@ -8,7 +8,9 @@ import {
 } from "../services/siteService";
 import { getProjects } from "../services/projectService";
 
+
 const EMPTY_FORM = { nom: "", url: "", projetId: "" };
+
 
 function Sites() {
   const [sites, setSites] = useState([]);
@@ -63,6 +65,7 @@ function Sites() {
     setShowForm(false);
   };
 
+
   const handleEditClick = (site) => {
     setForm({
       nom: site.nom,
@@ -75,8 +78,8 @@ function Sites() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.nom.trim() || !form.url.trim()) {
-      setError("Le nom et l'URL du site sont obligatoires.");
+    if (!form.projetId.toString().trim() || !form.nom.trim() || !form.url.trim()) {
+      setError("L'ID du projet, le nom et l'URL du site sont obligatoires.");
       return;
     }
     // projetId obligatoire uniquement à la création
@@ -85,7 +88,9 @@ function Sites() {
       return;
     }
 
+    // Le payload envoyé au backend contient désormais projetId
     const payload = {
+      projetId: Number(form.projetId) || form.projetId,
       nom: form.nom.trim(),
       url: form.url.trim(),
       ...(form.projetId && { projetId: parseInt(form.projetId) }),
@@ -152,7 +157,9 @@ function Sites() {
           onSubmit={handleSubmit}
           className="bg-white shadow border border-slate-200 rounded p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end transition-all"
         >
+          {/* Nouveau champ : ID du Projet */}
           <div>
+
             <label className="block text-sm font-medium text-gray-600 mb-1">
               Nom du Site
             </label>
@@ -167,6 +174,7 @@ function Sites() {
           </div>
 
           <div>
+
             <label className="block text-sm font-medium text-gray-600 mb-1">
               URL du Site
             </label>
@@ -225,7 +233,8 @@ function Sites() {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-slate-100 text-left text-slate-700 uppercase text-xs font-semibold tracking-wider border-b">
-              <th className="p-3">ID</th>
+              <th className="p-3">ID Site</th>
+              <th className="p-3">ID Projet</th>
               <th className="p-3">Nom</th>
               <th className="p-3">URL</th>
               <th className="p-3">Projet</th>
@@ -243,6 +252,7 @@ function Sites() {
               sites.map((site) => (
                 <tr key={site.id} className="border-b hover:bg-slate-50 transition-colors">
                   <td className="p-3 font-mono">{site.id}</td>
+                  <td className="p-3 font-mono text-slate-500">{site.projetId || "—"}</td>
                   <td className="p-3 font-medium text-slate-900">{site.nom}</td>
                   <td className="p-3">
                     
